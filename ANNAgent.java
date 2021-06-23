@@ -1,6 +1,7 @@
 import jade.core.Agent;
 import jade.core.behaviours.OneShotBehaviour;
 import java.util.ArrayList;
+import java.util.List;
 
 public class ANNAgent extends Agent {
   GUI gui;
@@ -52,10 +53,10 @@ public class ANNAgent extends Agent {
           i++;
         }
         List<Double> classification = neuralNetwork.predict(xValues);
-        if(classification[0]==1.0 && classification[1]==1.0){
+        if(classification.get(0)==1.0 && classification.get(1)==1.0){
           System.out.println("Turn Right");
         }
-        else if(classification[0]==0.0 && classification[1]==0.0){
+        else if(classification.get(0)==0.0 && classification.get(1)==0.0){
           System.out.println("Turn Left");
         }
         else{

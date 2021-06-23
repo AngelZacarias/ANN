@@ -5,7 +5,7 @@ public class Register{
 	public double[][] data;
 	public int rows;
     public int columns;
-    public Activation activationFunction;
+    //public Activation activationFunction;
 	
 	public Register(int rows, int columns){
 		data = new double[rows][columns];
@@ -18,7 +18,7 @@ public class Register{
 				data[i][j]=Math.random()*2-1;
 			}
 		}
-        this.activationFunction = new Activation();
+        //this.activationFunction = new Activation();
 	}
 	
 	// OPERATIONS TRATED AS MATRIX

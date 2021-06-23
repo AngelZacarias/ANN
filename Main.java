@@ -2,13 +2,13 @@ import java.util.List;
 
 public class Main {
 	//Or Function
-	double[][] X = {
+	static double[][] X = {
 		{0,0},
 		{1,0},
 		{0,1},
 		{1,1}
 	};
-	double[][] Y = {
+	static double[][] Y = {
 		{0},{1},{1},{0}
 	};
 

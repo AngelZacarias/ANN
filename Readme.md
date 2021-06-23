@@ -31,7 +31,7 @@ Execute:
 
 ## How to Run in JADE
 Compile with:
-- javac -classpath lib/jade.jar -d classes src/examples/ANN/*.java src/examples/ANN/*.java
+- javac -classpath lib/jade.jar -d classes src/examples/ANN/\*.java src/examples/ANN/\*.java
 
 Execute with:
 - java -cp lib/jade.jar;classes jade.Boot -gui -port 3100 -agents ANN:ANNAgent

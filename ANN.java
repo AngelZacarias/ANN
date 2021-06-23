@@ -1,80 +1,86 @@
-import java.util.Random;
-import java.util.ArrayList;
+import java.util.List;
 
-public class ANN {  
-    private Activation activationFunction;
-    private ArrayList<Register> dataSet;
-    private double[] weights;
-    private double learningRate;
+public class ANN{
+	private Register hiddenWeights;
+    private Register outputWeights; 
+    private Register hiddenBias;
+    private Register outputBias;	
+	private double learningRate=0.3;
     private int epochs;
-    
-    //Constructor
-    public ANN(ArrayList<Register> data){
-        System.out.println("Initializing Artifitial Neural Network...");
-        this.epochs = 500;
-        this.learningRate = 0.5;
-        this.activationFunction = new Activation();
-        this.dataSet = data;
-        this.weights = initWeightsToZero(this.dataSet.get(0).getX().length);
-        System.out.println("Training Artifitial Neural Network...");
-        train();
-    }
-
-    private double[] initWeightsToZero(int size){
-        double[] w = new double[size];
-        for (int i = 0; i < size; i++) {
-            w[i] = 0;
-        }
-        return w;
-    }
-
-    public void train(){
-        this.weights = calculateWeights();
-        System.out.println("Training has been finalized...");
-    }
-
-    public double predictRegression(Register register){
-        double regression = activationFunction.sigmoid(register.getX(), this.weights, register.getB());
-        return regression;
-    }
-
-    public boolean predictClassification(Register register){
-        double regression = activationFunction.sigmoid(register.getX(), this.weights, register.getB());
-        boolean classification = activationFunction.activate(regression);
-        return classification;
-    }
-
-    private double[] calculateWeights(){
-        //Initialize the Weights as the algorithm indicates
-        int wSize = this.dataSet.get(0).getX().length;
-        double[] W = initWeightsToZero(wSize);
-        //Iterate over the epochs
-        for(int i = 0; i < this.epochs; i++){
-            double[] iterWj = new double[wSize];
-            //Find W for this iteration
-            for (int j = 0; j < wSize; j++) {
-                iterWj[j] = W[j] - this.learningRate * resultDifference(W, j);
+	
+	public ANN(int nInputs,int nHidden,int nOutputs, int epochs){
+		this.hiddenWeights = new Register(nHidden,nInputs);
+		this.outputWeights = new Register(nOutputs,nHidden);
+		this.hiddenBias = new Register(nHidden,1);
+		this.outputBias = new Register(nOutputs,1);
+		this.epochs = epochs;
+	}
+	
+	public List<Double> predict(double[] X){
+		//Propagation with already stimated W and B
+		Register input = Register.fromArray(X);
+		Register hidden = Register.multiply(hiddenWeights, input);
+		hidden.add(hiddenBias);
+		hidden.sigmoid();
+		
+		Register output = Register.multiply(outputWeights,hidden);
+		output.add(outputBias);
+		output.sigmoid();
+		
+		//Classificate - Converts the sigmoid output into a discrete set of values
+		Register classification = Register.activate(output);
+		return classification.toArray();
+	}
+	
+	
+	public void fit(double[][]X,double[][]Y){
+        //Iterate over epochs
+		for(int i=0;i<epochs;i++){	
+            //Iterate over registers
+			for(int j=0; j<X.length; j++){
+                this.train(X[j], Y[j]);
             }
-            W = iterWj;
-        }
-        return W;
-    }
+		}
+	}
+	
+	public void train(double [] X,double [] Y){
+		//Feedforward Propagation
+		Register input = Register.fromArray(X);
+		Register hidden = Register.multiply(hiddenWeights, input);
+		hidden.add(hiddenBias);
+		hidden.sigmoid();
+		
+		Register output = Register.multiply(outputWeights,hidden);
+		output.add(outputBias);
+		output.sigmoid();
+		
+		//BackPropagation
+		Register target = Register.fromArray(Y);
+		
+		Register error = Register.subtract(target, output);
+		Register gradient = output.dsigmoid();
+		gradient.multiply(error);
+		gradient.multiply(learningRate);
+		
+		Register hidden_T = Register.transpose(hidden);
+		Register who_delta =  Register.multiply(gradient, hidden_T);
+		
+		outputWeights.add(who_delta);
+		outputBias.add(gradient);
+		
+		Register who_T = Register.transpose(outputWeights);
+		Register hidden_errors = Register.multiply(who_T, error);
+		
+		Register h_gradient = hidden.dsigmoid();
+		h_gradient.multiply(hidden_errors);
+		h_gradient.multiply(learningRate);
+		
+		Register i_T = Register.transpose(input);
+		Register wih_delta = Register.multiply(h_gradient, i_T);
+		
+		//Update W and B
+		hiddenWeights.add(wih_delta);
+		hiddenBias.add(h_gradient);
+	}
 
-    private double resultDifference(double[] w, int j) {
-        double iterationResult = 0.0;
-        double fxi = 0.0;
-        double yi = 0.0;
-        double xij = 0.0;
-        //Iterate over all the register to get Sum
-        for (int i = 0; i < this.dataSet.size(); i++) {
-            //Gets the register and estimate the result
-            Register register = this.dataSet.get(i);
-            fxi = activationFunction.sigmoid(register.getX(), w, register.getB());
-            yi = register.getY();
-            xij = register.getX()[j];
-            //Apply the equation
-            iterationResult += (fxi - yi) * xij;
-        }
-        return iterationResult;
-    }
 }

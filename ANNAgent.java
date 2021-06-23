@@ -9,17 +9,33 @@ public class ANNAgent extends Agent {
   protected void setup() {
     System.out.println("Agent " + getLocalName() + " started.");
     //Creates the data set
-    ArrayList<Register> dataSet = new ArrayList<Register>();
-    //Patterns for Right x, b, y
-    dataSet.add(new Register(new double[] { 0,0,1,0,0,  0,0,1,1,0,  1,1,1,1,1,  1,0,1,1,0,  1,0,1,0,0 }, 0.2, 1));
-    dataSet.add(new Register(new double[] { 0,0,1,0,0,  0,0,0,1,0,  1,1,1,1,1,  1,0,0,1,0,  1,0,1,0,0 }, 0.5, 1));
-    dataSet.add(new Register(new double[] { 0,0,1,1,0,  0,0,0,1,1,  1,1,1,1,1,  1,0,0,1,1,  1,0,1,1,0 }, 0.9, 1));
-    //Patterns for Left x, b, y
-    dataSet.add(new Register(new double[] { 0,0,1,0,0,  0,1,1,0,0,  1,1,1,1,1,  0,1,1,0,1,  0,0,1,0,1 }, 0.2, 0));
-    dataSet.add(new Register(new double[] { 0,0,1,0,0,  0,1,0,0,0,  1,1,1,1,1,  0,1,0,0,1,  0,0,1,0,1 }, 0.5, 0));
-    dataSet.add(new Register(new double[] { 0,1,1,0,0,  1,1,0,0,0,  1,1,1,1,1,  1,1,0,0,1,  0,1,1,0,1 }, 0.9, 0));
+    double [][] dataSetX = {
+      { 0,0,1,0,0,  0,0,1,1,0,  1,1,1,1,1,  1,0,1,1,0,  1,0,1,0,0 },
+      { 0,0,1,0,0,  0,0,0,1,0,  1,1,1,1,1,  1,0,0,1,0,  1,0,1,0,0 },
+      { 0,0,1,1,0,  0,0,0,1,1,  1,1,1,1,1,  1,0,0,1,1,  1,0,1,1,0 },
+      
+      { 0,0,1,0,0,  0,1,1,0,0,  1,1,1,1,1,  0,1,1,0,1,  0,0,1,0,1 },
+      { 0,0,1,0,0,  0,1,0,0,0,  1,1,1,1,1,  0,1,0,0,1,  0,0,1,0,1 },
+      { 0,1,1,0,0,  1,1,0,0,0,  1,1,1,1,1,  1,1,0,0,1,  0,1,1,0,1 }
 
-    neuralNetwork = new ANN(dataSet);
+    };
+    double [][] dataSetY= {
+			{ 1, 1 },
+      { 1, 1 },
+      { 1, 1 },
+      { 0, 0 },
+      { 0, 0 },
+      { 0, 0 }
+	  };
+    int nInputs = 25;
+    int nHidenNeurons = 5;
+    int nOutputs = 2;
+    int epochs = 500;
+    neuralNetwork = new ANN(nInputs, nHidenNeurons, nOutputs, epochs);
+    
+    //Train the Neural Network
+    neuralNetwork.fit(dataSetX, dataSetY);
+
     gui = new GUI(this);
     gui.showGui();
   }
@@ -35,12 +51,15 @@ public class ANNAgent extends Agent {
           xValues[i] = Double.parseDouble(value);
           i++;
         }
-        boolean classification = neuralNetwork.predictClassification(new Register(xValues, 0.5, 0));
-        if(classification){
+        List<Double> classification = neuralNetwork.predict(xValues);
+        if(classification[0]==1.0 && classification[1]==1.0){
           System.out.println("Turn Right");
         }
-        else{
+        else if(classification[0]==0.0 && classification[1]==0.0){
           System.out.println("Turn Left");
+        }
+        else{
+          System.out.println("Unknown");
         }
       }
     });
